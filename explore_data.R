@@ -21,26 +21,33 @@ for(i in 2011:2015){
 datefactor <- factor(yrmo, levels = plotnames)
 
 # indices and plots for whole dataset
-someARVinfo <- which(rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
-                       rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
-                       rawdata$ARV.Prophylaxis.Received. != "")
-
-totals_arvtype <- rbind(tabulate(datefactor[rawdata$ARV.Type != ""]),
-                        tabulate(datefactor[rawdata$ARV.Type == ""]))
-
 barplot(tabulate(datefactor), main = "All Touchpoints in Dataset",
         xlab = "year-month", names.arg = plotnames[1:57])
 
-barplot(rbind(tabulate(datefactor[someARVinfo]),
-              tabulate(datefactor[-someARVinfo])),
-        xlab = "year-month", names.arg = plotnames[1:57],
-        main = "All Touchpoints in Dataset without/with ARV/ART info")
 
-barplot(totals_arvtype, names.arg = plotnames[1:57],
-        main = "All Touchpoints by ARV Type (blank/not blank)")
+## rows with at least some ARV info
+hasARVinfo <- which(rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
+                       rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
+                       rawdata$ARV.Prophylaxis.Received. != "")
+
+barplot(rbind(tabulate(datefactor[hasARVinfo]),
+              tabulate(datefactor[-hasARVinfo])),
+        xlab = "year-month", ylab = "Number of Touchpoints",
+        names.arg = plotnames[1:57],
+        main = "All Touchpoints in Dataset",
+        col = c("dodgerblue", "gray"))
+legend("topright", legend = c("No ART info recorded", "At least some ART info"),
+       fill = c("gray", "dodgerblue"))
+
+
+# totals_arvtype <- rbind(tabulate(datefactor[rawdata$ARV.Type != ""]),
+#                         tabulate(datefactor[rawdata$ARV.Type == ""]))
+#
+# barplot(totals_arvtype, names.arg = plotnames[1:57],
+#         main = "All Touchpoints by ARV Type (blank/not blank)")
 
 # indices and plots for Kinshasa only
-someARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
+hasARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
                        (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
                         rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
                         rawdata$ARV.Prophylaxis.Received. != ""))
@@ -49,18 +56,43 @@ noARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
                          rawdata$ART.Situation == "" & rawdata$ARV.Received. == "" &
                          rawdata$ARV.Prophylaxis.Received. == ""))
 
-totals_arvtype_k <- rbind(tabulate(datefactor[(rawdata$ARV.Type != "") &
-                          (rawdata$Beneficiary.Region.Province == "Kinshasa")]),
-                          tabulate(datefactor[(rawdata$ARV.Type == "") &
-                          (rawdata$Beneficiary.Region.Province == "Kinshasa")]))
-
-barplot(rbind(tabulate(datefactor[someARVinfo_k]),
+barplot(rbind(tabulate(datefactor[hasARVinfo_k]),
               tabulate(datefactor[noARVinfo_k])),
-        xlab = "year-month", names.arg = plotnames[1:57],
-        main = "All Kinshasa Touchpoints without/with ARV/ART info")
-barplot(totals_arvtype_k,
-        main = "All Kinshasa Touchpoints by ARV Type (blank/not blank)",
-        names.arg = plotnames[1:57])
+        xlab = "year-month", ylab = "Number of Touchpoints",
+        names.arg = plotnames[1:57],
+        main = "Kinshasa Touchpoints Only",
+        col = c("dodgerblue", "gray"))
+legend("topright", legend = c("No ART info recorded", "At least some ART info"),
+       fill = c("gray", "dodgerblue"))
+
+# totals_arvtype_k <- rbind(tabulate(datefactor[(rawdata$ARV.Type != "") &
+#                           (rawdata$Beneficiary.Region.Province == "Kinshasa")]),
+#                           tabulate(datefactor[(rawdata$ARV.Type == "") &
+#                           (rawdata$Beneficiary.Region.Province == "Kinshasa")]))
+# barplot(totals_arvtype_k,
+#         main = "All Kinshasa Touchpoints by ARV Type (blank/not blank)",
+#         names.arg = plotnames[1:57])
+
+
+
+# indices and plots for Katanga only
+hasARVinfo_kat <- which(rawdata$Beneficiary.Region.Province == "Katanga" &
+                        (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
+                           rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
+                           rawdata$ARV.Prophylaxis.Received. != ""))
+noARVinfo_kat <- which(rawdata$Beneficiary.Region.Province == "Katanga" &
+                       (rawdata$ARV.Type == "" & rawdata$ART.Start == "" &
+                          rawdata$ART.Situation == "" & rawdata$ARV.Received. == "" &
+                          rawdata$ARV.Prophylaxis.Received. == ""))
+
+barplot(rbind(tabulate(datefactor[hasARVinfo_kat]),
+              tabulate(datefactor[noARVinfo_kat])),
+        xlab = "year-month", ylab = "Number of Touchpoints",
+        names.arg = plotnames[1:57],
+        main = "Katanga Touchpoints Only",
+        col = c("dodgerblue", "gray"))
+legend("topright", legend = c("No ART info recorded", "At least some ART info"),
+       fill = c("gray", "dodgerblue"))
 
 
 # observations without a start date
@@ -76,8 +108,12 @@ nostart_noARV <- which(rawdata$Beginning.Date.of.Treatment == "" &
 
 barplot(rbind(tabulate(datefactor[nostart_someARV]),
               tabulate(datefactor[nostart_noARV])),
+        xlab = "year-month", ylab = "Number of Touchpoints",
         names.arg = plotnames[1:57],
-        main = "Touchpoints without start date, colored by without/with ARV info")
+        main = "All Touchpoints without 'Beginning Date of Treatment'",
+        col = c("dodgerblue", "gray"))
+legend("topright", legend = c("No ART info recorded", "At least some ART info"),
+       fill = c("gray", "dodgerblue"))
 
 
 # observations with a start date
