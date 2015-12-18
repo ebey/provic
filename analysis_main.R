@@ -6,12 +6,12 @@
 
 load("Kinshasa_prepped.rds")
 
-analysis.vars <- c("ART.Situation", "ARV.TAR.Received.", "Beneficiary.Age",
+analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Health.Zone", "Beneficiary.Syphilis.Result",
-                   "CD4.Count", "Creatinine", "Cotrimaxazole.Prophylaxis",
-                   "Education.Level", "Marital.Status", "Partner.s.Status",
-                   "Profession", "Religion", "Sex", "Support.Group",
-                   "Target.Group")
+                   "Cotrimaxazole.Prophylaxis", "Education.Level",
+                   "Marital.Status", "Partner.s.Status", "Profession",
+                   "Religion", "Sex", "Support.Group", "Target.Group")
+analysis.vars.num <- c("Beneficiary.Age", "CD4.Count", "Creatinine")
 end.date <- as.Date("09/30/2015", format = "%m/%d/%Y")
 prescr.length <- 30
 drop.window <- 90
@@ -65,4 +65,8 @@ for(ccode in cc){
 }
 
 survobj <- Surv(time = cum.surv, event = drop.event)
+covars <- as.data.frame(sorteddata[!duplicated(sorteddata$Client.Code),
+                                   c("Client.Code", analysis.vars)])
+
+survival.univ(survobj, vars = analysis.vars, covardf = covars)
 
