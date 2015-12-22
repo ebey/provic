@@ -27,8 +27,9 @@ barplot(tabulate(datefactor), main = "All Touchpoints in Dataset",
 
 ## rows with at least some ARV info
 hasARVinfo <- which(rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
-                       rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
-                       rawdata$ARV.Prophylaxis.Received. != "")
+                      rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
+                      rawdata$ARV.Prophylaxis.Received. != "" |
+                      rawdata$ARV.TAR.Received. != "")
 
 barplot(rbind(tabulate(datefactor[hasARVinfo]),
               tabulate(datefactor[-hasARVinfo])),
@@ -50,11 +51,13 @@ legend("topright", legend = c("No ART info recorded", "At least some ART info"),
 hasARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
                        (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
                         rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
-                        rawdata$ARV.Prophylaxis.Received. != ""))
+                        rawdata$ARV.Prophylaxis.Received. != "" |
+                       rawdata$ARV.TAR.Received. != ""))
 noARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
                         (rawdata$ARV.Type == "" & rawdata$ART.Start == "" &
                          rawdata$ART.Situation == "" & rawdata$ARV.Received. == "" &
-                         rawdata$ARV.Prophylaxis.Received. == ""))
+                         rawdata$ARV.Prophylaxis.Received. == "" &
+                         rawdata$ARV.TAR.Received. == ""))
 
 barplot(rbind(tabulate(datefactor[hasARVinfo_k]),
               tabulate(datefactor[noARVinfo_k])),
@@ -79,11 +82,13 @@ legend("topright", legend = c("No ART info recorded", "At least some ART info"),
 hasARVinfo_kat <- which(rawdata$Beneficiary.Region.Province == "Katanga" &
                         (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
                            rawdata$ART.Situation != "" | rawdata$ARV.Received. != "" |
-                           rawdata$ARV.Prophylaxis.Received. != ""))
+                           rawdata$ARV.Prophylaxis.Received. != "" |
+                           rawdata$ARV.TAR.Received. != ""))
 noARVinfo_kat <- which(rawdata$Beneficiary.Region.Province == "Katanga" &
                        (rawdata$ARV.Type == "" & rawdata$ART.Start == "" &
                           rawdata$ART.Situation == "" & rawdata$ARV.Received. == "" &
-                          rawdata$ARV.Prophylaxis.Received. == ""))
+                          rawdata$ARV.Prophylaxis.Received. == "" &
+                          rawdata$ARV.TAR.Received. == ""))
 
 barplot(rbind(tabulate(datefactor[hasARVinfo_kat]),
               tabulate(datefactor[noARVinfo_kat])),
