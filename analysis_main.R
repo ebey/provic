@@ -4,7 +4,25 @@
 ## Based on STATA code written by David Phillips
 ## ----------------------------------------------
 
-load("Kinshasa_prepped.rds")
+library(RColorBrewer)
+library(survival)
+
+#load functions that we need
+source("analysis_funcs.R")
+source("prep_data.R")
+
+prov <- "Katanga"
+start.date <- as.Date("01/01/2013", format = "%m/%d/%Y")
+end.date <- as.Date("09/30/2015", format = "%m/%d/%Y")
+prescr.length <- 90
+drop.window <- 90
+
+#load, subset and clean data
+prep.data(province = prov, start.date = start.date, end.date = end.date)
+
+workingdata <- readRDS(paste0(prov, "_prepped.rds"))
+
+
 
 analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Health.Zone", "Beneficiary.Syphilis.Result",
@@ -12,9 +30,6 @@ analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Marital.Status", "Partner.s.Status", "Profession",
                    "Religion", "Sex", "Support.Group", "Target.Group")
 analysis.vars.num <- c("Beneficiary.Age", "CD4.Count", "Creatinine")
-end.date <- as.Date("09/30/2015", format = "%m/%d/%Y")
-prescr.length <- 30
-drop.window <- 90
 
 # days to next visit
 sorteddata <- workingdata[order(factor(workingdata$Client.Code),
@@ -29,7 +44,7 @@ for(i in seq(nrow(sorteddata) - 1)){
 }
 
 drop.event <- rep(0, length(cc))
-reentered <- rep(0, length(cc))
+reentered <- rep(0, length(cc)) # not used yet
 # drop-out is defined as being off ARVs for 90 days, in this case having
 # an interval between appointment dates greater than the prescription length
 # plus 90. See Unge et al 2010, Plos One Vol 5, Issue 10.
@@ -47,10 +62,14 @@ for(ccode in cc){
       cum.surv[ind] <- prescr.length
     } else if(temp.dtnv[1] > prescr.length + drop.window){
       cum.surv[ind] <- prescr.length
+      reentered[ind] <- 1
     } else {
       drop.ind <- which(temp.dtnv > prescr.length + drop.window)
       if(length(drop.ind > 1)) {
         drop.ind <- drop.ind[1]
+      }
+      if(length(temp.dtnv) > drop.ind){
+        reentered[ind] <- 1
       }
       cum.surv[ind] <- sum(temp.dtnv[1:(drop.ind - 1)]) + prescr.length
     }
@@ -68,5 +87,6 @@ survobj <- Surv(time = cum.surv, event = drop.event)
 covars <- as.data.frame(sorteddata[!duplicated(sorteddata$Client.Code),
                                    c("Client.Code", analysis.vars)])
 
-survival.univ(survobj, vars = analysis.vars, covardf = covars)
+survival.univ(survobj, vars = analysis.vars, covardf = covars,
+              subtitle = paste(prov, start.date, "-", end.date))
 
