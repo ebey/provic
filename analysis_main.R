@@ -42,15 +42,18 @@ workingdata$CD4.Count.Group[workingdata$CD4.Count >= 350 &
                               workingdata$CD4.Count < 500] <- "350-499"
 workingdata$CD4.Count.Group[workingdata$CD4.Count >= 500] <- "500+"
 
+workingdata$Support.Group.YesNo[workingdata$Support.Group == ""] <- "No"
+workingdata$Support.Group.YesNo[workingdata$Support.Group == "N/A"] <- "No"
+workingdata$Support.Group.YesNo[workingdata$Support.Group != "" &
+                                  workingdata$Support.Group != "N/A"] <- "Yes"
+
 
 analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Health.Zone", "Beneficiary.Syphilis.Result",
                    "Cotrimaxazole.Prophylaxis", "Education.Level",
                    "Marital.Status", "Partner.s.Status", "Profession",
-                   "Religion", "Sex", "Support.Group", "Target.Group",
+                   "Religion", "Sex", "Support.Group.YesNo", "Target.Group",
                    "Beneficiary.Age.Group", "CD4.Count.Group")
-
-
 
 
 # days to next visit
