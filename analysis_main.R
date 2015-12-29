@@ -7,29 +7,53 @@
 library(RColorBrewer)
 library(survival)
 
-#load functions that we need
+# load functions that we need
 source("analysis_funcs.R")
 source("prep_data.R")
 
 prov <- "Katanga"
-start.date <- as.Date("01/01/2013", format = "%m/%d/%Y")
+# prov <- "Kinshasa"
+start.date <- as.Date("10/01/2013", format = "%m/%d/%Y")
 end.date <- as.Date("09/30/2015", format = "%m/%d/%Y")
 prescr.length <- 90
 drop.window <- 90
 
-#load, subset and clean data
-prep.data(province = prov, start.date = start.date, end.date = end.date)
+# load, subset and clean data
+# prep.data(province = prov, start.date = start.date, end.date = end.date)
 
 workingdata <- readRDS(paste0(prov, "_prepped.rds"))
 
+# group numeric variables
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age < 11] <- "0-10"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 10 &
+                                    workingdata$Beneficiary.Age < 21] <- "11-20"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 20 &
+                                    workingdata$Beneficiary.Age < 31] <- "21-30"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 30 &
+                                    workingdata$Beneficiary.Age < 41] <- "31-40"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 40 &
+                                    workingdata$Beneficiary.Age < 51] <- "41-50"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 50 &
+                                    workingdata$Beneficiary.Age < 61] <- "51-60"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 60] <- "61+"
+
+workingdata$CD4.Count.Group[workingdata$CD4.Count < 201] <- "0-200"
+workingdata$CD4.Count.Group[workingdata$CD4.Count > 200 &
+                              workingdata$CD4.Count <= 350] <- "201-350"
+workingdata$CD4.Count.Group[workingdata$CD4.Count > 350 &
+                              workingdata$CD4.Count <= 500] <- "351-500"
+workingdata$CD4.Count.Group[workingdata$CD4.Count > 500] <- "501+"
 
 
 analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Health.Zone", "Beneficiary.Syphilis.Result",
                    "Cotrimaxazole.Prophylaxis", "Education.Level",
                    "Marital.Status", "Partner.s.Status", "Profession",
-                   "Religion", "Sex", "Support.Group", "Target.Group")
-analysis.vars.num <- c("Beneficiary.Age", "CD4.Count", "Creatinine")
+                   "Religion", "Sex", "Support.Group", "Target.Group",
+                   "Beneficiary.Age.Group", "CD4.Count.Group")
+
+
+
 
 # days to next visit
 sorteddata <- workingdata[order(factor(workingdata$Client.Code),
