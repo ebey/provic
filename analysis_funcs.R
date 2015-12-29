@@ -7,9 +7,13 @@ survival.univ <- function(survobj, vars, covardf, subtitle = ""){
     lvls <- sort(unique(covardf[[av]]))
     mis <- sum(lvls == "", na.rm = TRUE) + sum(is.na(lvls))
     lvls <- lvls[lvls != ""]
+    nlvls <- length(lvls)
 
     colpal <- suppressWarnings(brewer.pal(name = "YlGnBu",
-                                          n = length(lvls) + 1)[-1])
+                                          n = nlvls + 1)[-1])
+    if(nlvls > 8){
+      colpal <- append(colpal, rev(brewer.pal(name = "OrRd", n = 9)[-1]))
+    }
     covardf[["thisvar"]] <- covardf[[av]]
     fit <- coxph(survobj ~ thisvar, data = covardf)
     datavals <- data.frame(thisvar = lvls)
@@ -17,11 +21,11 @@ survival.univ <- function(survobj, vars, covardf, subtitle = ""){
          main = av, xlab = "Days in ART program",
          ylab = "Proportion retained in treatment",
          sub = paste("Missing:", mis))
-    lvlsn <- c()
+    lvln <- c()
     for(lv in lvls){
-      lvlsn <- append(lvlsn, sum(covars[[av]] == lv, na.rm = TRUE))
+      lvln <- append(lvln, sum(covars[[av]] == lv, na.rm = TRUE))
     }
-    legend("topright", legend = paste0(lvls, " (",lvlsn,")"),
+    legend("topright", legend = paste0(lvls, " (",lvln,")"),
            fill = colpal, cex = 0.75)
     mtext(subtitle, side = 3, line = 0)
   }
