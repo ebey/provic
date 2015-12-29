@@ -24,25 +24,23 @@ drop.window <- 90
 workingdata <- readRDS(paste0(prov, "_prepped.rds"))
 
 # group numeric variables
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age < 11] <- "0-10"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 10 &
-                                    workingdata$Beneficiary.Age < 21] <- "11-20"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 20 &
-                                    workingdata$Beneficiary.Age < 31] <- "21-30"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 30 &
-                                    workingdata$Beneficiary.Age < 41] <- "31-40"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 40 &
-                                    workingdata$Beneficiary.Age < 51] <- "41-50"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 50 &
-                                    workingdata$Beneficiary.Age < 61] <- "51-60"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 60] <- "61+"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age <= 14] <- "0-14"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 14 &
+                                    workingdata$Beneficiary.Age < 25] <- "15-24"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 24 &
+                                    workingdata$Beneficiary.Age < 35] <- "25-34"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 34 &
+                                    workingdata$Beneficiary.Age < 45] <- "35-44"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 44 &
+                                    workingdata$Beneficiary.Age < 55] <- "45-54"
+workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age >= 55] <- "55+"
 
-workingdata$CD4.Count.Group[workingdata$CD4.Count < 201] <- "0-200"
-workingdata$CD4.Count.Group[workingdata$CD4.Count > 200 &
-                              workingdata$CD4.Count <= 350] <- "201-350"
-workingdata$CD4.Count.Group[workingdata$CD4.Count > 350 &
-                              workingdata$CD4.Count <= 500] <- "351-500"
-workingdata$CD4.Count.Group[workingdata$CD4.Count > 500] <- "501+"
+workingdata$CD4.Count.Group[workingdata$CD4.Count < 200] <- "0-199"
+workingdata$CD4.Count.Group[workingdata$CD4.Count >= 200 &
+                              workingdata$CD4.Count < 350] <- "200-349"
+workingdata$CD4.Count.Group[workingdata$CD4.Count >= 350 &
+                              workingdata$CD4.Count < 500] <- "350-499"
+workingdata$CD4.Count.Group[workingdata$CD4.Count >= 500] <- "500+"
 
 
 analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
