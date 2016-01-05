@@ -40,13 +40,6 @@ barplot(rbind(tabulate(datefactor[hasARVinfo]),
 legend("topright", legend = c("No ART info recorded", "At least some ART info"),
        fill = c("gray", "#005D6E"))
 
-
-# totals_arvtype <- rbind(tabulate(datefactor[rawdata$ARV.Type != ""]),
-#                         tabulate(datefactor[rawdata$ARV.Type == ""]))
-#
-# barplot(totals_arvtype, names.arg = plotnames[1:57],
-#         main = "All Touchpoints by ARV Type (blank/not blank)")
-
 # indices and plots for Kinshasa only
 hasARVinfo_k <- which(rawdata$Beneficiary.Region.Province == "Kinshasa" &
                        (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
@@ -68,16 +61,6 @@ barplot(rbind(tabulate(datefactor[hasARVinfo_k]),
 legend("topright", legend = c("No ART info recorded", "At least some ART info"),
        fill = c("gray", "#005D6E"))
 
-# totals_arvtype_k <- rbind(tabulate(datefactor[(rawdata$ARV.Type != "") &
-#                           (rawdata$Beneficiary.Region.Province == "Kinshasa")]),
-#                           tabulate(datefactor[(rawdata$ARV.Type == "") &
-#                           (rawdata$Beneficiary.Region.Province == "Kinshasa")]))
-# barplot(totals_arvtype_k,
-#         main = "All Kinshasa Touchpoints by ARV Type (blank/not blank)",
-#         names.arg = plotnames[1:57])
-
-
-
 # indices and plots for Katanga only
 hasARVinfo_kat <- which(rawdata$Beneficiary.Region.Province == "Katanga" &
                         (rawdata$ARV.Type != "" | rawdata$ART.Start != "" |
@@ -96,8 +79,8 @@ barplot(rbind(tabulate(datefactor[hasARVinfo_kat]),
         names.arg = plotnames[1:57],
         main = "Katanga Touchpoints Only",
         col = c("#005D6E", "gray"))
-legend("topright", legend = c("No ART info recorded", "At least some ART info"),
-       fill = c("gray", "#005D6E"))
+legend("topleft", legend = c("No ART info recorded", "At least some ART info"),
+       fill = c("gray", "#005D6E"), bty = "n")
 
 
 # observations without a start date
