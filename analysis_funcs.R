@@ -3,6 +3,21 @@
 # Days to next visit
 
 dtnv.plots <- function(dtnv, sorteddata, prov, start.date, end.date){
+  library(plotly)
+
+  # days to next visit
+  dtnv <- diff(sorteddata$Date.of.Touchpoint)
+  cens <- rep(0, length(dtnv))
+  for(i in seq(nrow(sorteddata) - 1)){
+    if(sorteddata[i, 1] != sorteddata[i+1, 1]){
+      # use end of study period if there was no next visit
+      dtnv[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
+      cens[i] <- 1
+    }
+  }
+  dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
+  cens <- append(cens, 1)
+
   dtnvlist <- list()
   dtnvintervals <- list()
   visitno <- c()
@@ -11,18 +26,37 @@ dtnv.plots <- function(dtnv, sorteddata, prov, start.date, end.date){
     dtnvlist[[cc]] <- dtnv[which(sorteddata$Client.Code == cc)]
     visitno <- append(visitno, seq(length(dtnvlist[[cc]])))
   }
-  plot(dtnvlist[[1]], y = seq(length(dtnvlist[[1]])),
-       col = adjustcolor(col = "#08519c", alpha.f = 0.3),
-       xlim = c(0, 365), ylim = c(0, 25), pch = 16,
-       xlab = "Days to Next Visit", ylab = "Visits Already Completed",
-       main = paste(prov, start.date, "to", end.date))
-  mtext(text = "Cut off after 1 year between visits or 25 visits")
-  for(i in 1:length(ccodes)){
-    l <- length(dtnvlist[[i]])
-    points(x = dtnvlist[[i]], y = seq(l), pch = 16,
-           col = adjustcolor(col = "#08519c", alpha.f = 0.3))
+  for(j in seq(max(visitno))){
+    dtnvintervals[[j]] <- dtnv[which(visitno == j)]
   }
 
+  # boxplot
+  boxplot(dtnvintervals, xlab = "Visits completed", ylab = "Days to next visit",
+          main = paste(prov, start.date, "to", end.date),
+          col = adjustcolor(col = "#08519c", alpha.f = 0.3), outline = FALSE)
+
+  # scatter plot
+  plot(dtnvlist[[1]], y = seq(length(dtnvlist[[1]])),
+       col = adjustcolor(col = "#238b45", alpha.f = 0.3),
+       xlim = c(0, 365), ylim = c(0, 35), pch = 16,
+       xlab = "Days to Next Visit", ylab = "Visits Already Completed",
+       main = paste(prov, start.date, "to", end.date))
+  mtext(text = "Cut off after 1 year between visits")
+  count <- 1
+  for(i in 1:length(ccodes)){
+    plotcol <- ifelse(cens[i] == 0,
+                      adjustcolor(col = "#08519c", alpha.f = 0.3),
+                      adjustcolor(col = "#238b45", alpha.f = 0.3))
+    l <- length(dtnvlist[[i]])
+    points(x = dtnvlist[[i]], y = seq(l), pch = 16,
+           col = plotcol)
+    count <- count + 1
+  }
+  legend("topright", legend = c("Not censored obs", "Censored obs"),
+         pch = 16, col = c(adjustcolor(col = "#08519c", alpha.f = 0.3),
+                           adjustcolor(col = "#238b45", alpha.f = 0.3)))
+
+  # 3d plot
   dtnvheight <- matrix(0, nrow = max(visitno), ncol = max(dtnv))
   for(vn in unique(visitno)){
     dtnvtemp <- dtnv[which(visitno == vn)]
@@ -30,17 +64,28 @@ dtnv.plots <- function(dtnv, sorteddata, prov, start.date, end.date){
       dtnvheight[vn, dt] <- dtnvheight[vn, dt] + 1
     }
   }
+  plot_ly(z = dtnvheight, type = "surface")
+#   persp(x = seq(max(visitno)), y = seq(max(dtnv)), z = dtnvheight,
+#         theta = -30, phi = 35, col = "blue",
+#         xlab = "Visits completed", ylab = "Days to next visit")
 
-  persp(x = seq(max(visitno)), y = seq(max(dtnv)), z = dtnvheight,
-        theta = 35, phi = 15, col = "blue",
-        xlab = "Visits completed", ylab = "Days to next visit")
 }
 
 # Univariate survival analysis
 
-survival.univ <- function(sorteddata, vars, subtitle = ""){
+survival.univ <- function(sorteddata, dtnv, vars, subtitle = ""){
 
   ccodes <- unique(sorteddata$Client.Code)
+
+  # days to next visit
+  dtnv <- diff(sorteddata$Date.of.Touchpoint)
+  for(i in seq(nrow(sorteddata) - 1)){
+    if(sorteddata[i, 1] != sorteddata[i+1, 1]){
+      # use end of study period if there was no next visit
+      dtnv[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
+    }
+  }
+  dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
 
   # find drop events
   drop.event <- rep(0, length(ccodes))

@@ -57,20 +57,9 @@ analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Age.Group", "CD4.Count.Group")
 
 
-# days to next visit
+# sort by client code and date
 sorteddata <- workingdata[order(factor(workingdata$Client.Code),
                                 factor(workingdata$Date.of.Touchpoint)), ]
-cc <- unique(sorteddata$Client.Code)
-dtnv <- diff(sorteddata$Date.of.Touchpoint)
-for(i in seq(nrow(sorteddata) - 1)){
-  if(sorteddata[i, 1] != sorteddata[i+1, 1]){
-    # use end of study period if there was no next visit
-    dtnv[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
-  }
-}
-dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
-
-
 
 
 # Days to next visit
