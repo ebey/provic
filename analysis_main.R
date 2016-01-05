@@ -21,6 +21,7 @@ drop.window <- 90
 # load, subset and clean data
 # prep.data(province = prov, start.date = start.date, end.date = end.date)
 
+# or load already prepared data
 workingdata <- readRDS(paste0(prov, "_prepped.rds"))
 
 # group numeric variables
@@ -69,55 +70,14 @@ for(i in seq(nrow(sorteddata) - 1)){
 }
 dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
 
-drop.event <- rep(0, length(cc))
-reentered <- rep(0, length(cc))
-# drop-out is defined as being off ARVs for 90 days, in this case having
-# an interval between appointment dates greater than the prescription length
-# plus 90. See Unge et al 2010, Plos One Vol 5, Issue 10.
-cc.dropped <- unique(sorteddata$Client.Code[which(dtnv > prescr.length + drop.window)])
-drop.event[which(cc %in% cc.dropped)] <- 1
-ind <- 1
-cum.surv <- c()
-# cumulative time without dropping out
-for(ccode in cc){
-  temp.dtnv <- dtnv[which(sorteddata$Client.Code == ccode)]
-  if(ccode %in% cc.dropped){
-    # if someone drops out we add the prescription length to their last visit
-    # in order to count their cumulative survival in the program
-    if(length(temp.dtnv) == 1){
-      cum.surv[ind] <- prescr.length
-    } else if(temp.dtnv[1] > prescr.length + drop.window){
-      cum.surv[ind] <- prescr.length
-      reentered[ind] <- 1
-    } else {
-      drop.ind <- which(temp.dtnv > prescr.length + drop.window)
-      if(length(drop.ind > 1)) {
-        drop.ind <- drop.ind[1]
-      }
-      if(length(temp.dtnv) > drop.ind){
-        reentered[ind] <- 1
-      }
-      cum.surv[ind] <- sum(temp.dtnv[1:(drop.ind - 1)]) + prescr.length
-    }
 
-  } else {
-    # these people make it to the end of the study without dropping out so
-    # we don't add the prescription length to their time in the program
-    # (they are counted as censored)
-    cum.surv[ind] <- sum(temp.dtnv)
-  }
-  ind <- ind + 1
-}
 
 
 # Days to next visit
-dtnv.plots(dtnv, sorteddata, start.date, end.date)
+dtnv.plots(dtnv, sorteddata, prov, start.date, end.date)
 
-# Survival analysis
-survobj <- Surv(time = cum.surv, event = drop.event)
-covars <- as.data.frame(sorteddata[!duplicated(sorteddata$Client.Code),
-                                   c("Client.Code", analysis.vars)])
 
-survival.univ(survobj, vars = analysis.vars, covardf = covars,
+# Univariate survival analysis
+survival.univ(sorteddata, vars = analysis.vars,
               subtitle = paste(prov, start.date, "-", end.date))
 
