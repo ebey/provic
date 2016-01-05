@@ -67,9 +67,10 @@ for(i in seq(nrow(sorteddata) - 1)){
     dtnv[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
   }
 }
+dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
 
 drop.event <- rep(0, length(cc))
-reentered <- rep(0, length(cc)) # not used yet
+reentered <- rep(0, length(cc))
 # drop-out is defined as being off ARVs for 90 days, in this case having
 # an interval between appointment dates greater than the prescription length
 # plus 90. See Unge et al 2010, Plos One Vol 5, Issue 10.
@@ -108,6 +109,11 @@ for(ccode in cc){
   ind <- ind + 1
 }
 
+
+# Days to next visit
+dtnv.plots(dtnv, sorteddata, start.date, end.date)
+
+# Survival analysis
 survobj <- Surv(time = cum.surv, event = drop.event)
 covars <- as.data.frame(sorteddata[!duplicated(sorteddata$Client.Code),
                                    c("Client.Code", analysis.vars)])
