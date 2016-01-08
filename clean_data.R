@@ -7,10 +7,14 @@
 
 # Load data ---------------------------------------------------------------
 
+cat("**Loading Data**")
+
 rawdata <- read.csv("C:/Users/ebeylerian/Dropbox/ProVIC Retention analysis/data/Ben_TP_HIVpos_alltime_allprov_2015.10.22.csv",
                     header = TRUE, stringsAsFactors = FALSE)
 
 # Clean variable values ---------------------------------------------------
+
+cat("**Cleaning Data**")
 
 # Remove NA client codes
 workingdata <- rawdata[!is.na(rawdata$Client.Code), ]
@@ -63,6 +67,8 @@ workingdata$ART.Situation[workingdata$ART.Situation == "Salle d'accouchement"] <
 
 # Deal with duplicates ----------------------------------------------------
 
+cat("**Removing Duplicates**")
+
 # drop complete dups (new total = 3474)
 workingdata <- unique(workingdata)
 # dups within client code/date of touchpoint
@@ -93,6 +99,8 @@ for(i in dupids){
 workingdata <- unique(workingdata)
 
 # Add columns for groups, dtnv, censored ------------------------------------
+
+cat("**Adding New Columns**")
 
 # group numeric variables
 workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age <= 14] <- "0-14"
@@ -142,5 +150,7 @@ sorteddata$dtnv <- dtnv
 sorteddata$censored <- cens
 
 # Save cleaned dataframe --------------------------------------------------
+
+cat("**Saving to csv**")
 
 write.csv(sorteddata, file = "ProVIC_salesforce_cleaned.csv", row.names = FALSE)
