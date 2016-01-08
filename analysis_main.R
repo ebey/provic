@@ -24,31 +24,6 @@ drop.window <- 90
 # or load already prepared data
 workingdata <- readRDS(paste0(prov, "_prepped.rds"))
 
-# group numeric variables
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age <= 14] <- "0-14"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 14 &
-                                    workingdata$Beneficiary.Age < 25] <- "15-24"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 24 &
-                                    workingdata$Beneficiary.Age < 35] <- "25-34"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 34 &
-                                    workingdata$Beneficiary.Age < 45] <- "35-44"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age > 44 &
-                                    workingdata$Beneficiary.Age < 55] <- "45-54"
-workingdata$Beneficiary.Age.Group[workingdata$Beneficiary.Age >= 55] <- "55+"
-
-workingdata$CD4.Count.Group[workingdata$CD4.Count < 200] <- "0-199"
-workingdata$CD4.Count.Group[workingdata$CD4.Count >= 200 &
-                              workingdata$CD4.Count < 350] <- "200-349"
-workingdata$CD4.Count.Group[workingdata$CD4.Count >= 350 &
-                              workingdata$CD4.Count < 500] <- "350-499"
-workingdata$CD4.Count.Group[workingdata$CD4.Count >= 500] <- "500+"
-
-workingdata$Support.Group.YesNo[workingdata$Support.Group == ""] <- "No"
-workingdata$Support.Group.YesNo[workingdata$Support.Group == "N/A"] <- "No"
-workingdata$Support.Group.YesNo[workingdata$Support.Group != "" &
-                                  workingdata$Support.Group != "N/A"] <- "Yes"
-
-
 analysis.vars <- c("ART.Situation", "ARV.TAR.Received.",
                    "Beneficiary.Health.Zone", "Beneficiary.Syphilis.Result",
                    "Cotrimaxazole.Prophylaxis", "Education.Level",
@@ -63,7 +38,8 @@ sorteddata <- workingdata[order(factor(workingdata$Client.Code),
 
 
 # Days to next visit
-dtnv.plots(dtnv, sorteddata, prov, start.date, end.date)
+dtnv.plots(sorteddata, title = paste(prov, start.date, "to", end.date),
+           type = "scatterplot", var = "Sex")
 
 
 # Univariate survival analysis
