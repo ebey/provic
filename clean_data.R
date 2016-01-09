@@ -126,28 +126,58 @@ workingdata$Support.Group.YesNo[workingdata$Support.Group == "N/A"] <- "No"
 workingdata$Support.Group.YesNo[workingdata$Support.Group != "" &
                                   workingdata$Support.Group != "N/A"] <- "Yes"
 
+workingdata$Any.ART.info <- workingdata$ARV.Type != "" | workingdata$ART.Start != "" |
+  workingdata$ART.Situation != "" | workingdata$ARV.TAR.Received. != "" |
+  workingdata$ARV.Prophylaxis.Received. != "" | workingdata$ARV.Received. != ""
 
 workingdata$Date.of.Touchpoint <- as.Date(workingdata$Date.of.Touchpoint,
                                           format = "%m/%d/%Y")
+workingdata$Date.of.Touchpoint[workingdata$Date.of.Touchpoint == "3014-11-19"] <- as.Date("2014-11-19")
+workingdata$Date.of.Touchpoint[workingdata$Date.of.Touchpoint == "2104-12-30"] <- as.Date("2014-12-30")
+workingdata <- workingdata[workingdata$Date.of.Touchpoint < as.Date("2016-01-01"), ]
 
 # sort by client code and date
 sorteddata <- workingdata[order(factor(workingdata$Client.Code),
                                 factor(workingdata$Date.of.Touchpoint)), ]
+end.date <- as.Date("09/30/2015", format = "%m/%d/%Y")
 
-dtnv <- diff(sorteddata$Date.of.Touchpoint)
-cens <- rep(0, length(dtnv))
-for(i in seq(nrow(sorteddata) - 1)){
-  if(sorteddata[i, 1] != sorteddata[i+1, 1]){
+dtnv.all <- diff(sorteddata$Date.of.Touchpoint)
+cens.all <- rep(0, length(dtnv.all))
+for(i in seq(nrow(sorteddata)-1)){
+  if(sorteddata$Client.Code[i] != sorteddata$Client.Code[i+1]){
     # use end of study period if there was no next visit
-    dtnv[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
-    cens[i] <- 1
+    dtnv.all[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
+    cens.all[i] <- 1
   }
 }
-dtnv <- append(dtnv, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
-cens <- append(cens, 1)
+dtnv.all <- append(dtnv.all, end.date - tail(sorteddata$Date.of.Touchpoint, 1))
+cens.all <- append(cens.all, 1)
 
-sorteddata$dtnv <- dtnv
-sorteddata$censored <- cens
+dtnv.art <- rep(0, length(sorteddata$Client.Code))
+dtnv.art[head(which(sorteddata$Any.ART.info), -1)] <- diff(sorteddata$Date.of.Touchpoint[sorteddata$Any.ART.info])
+cens.art <- rep(0, length(dtnv.art))
+for(i in head(which(sorteddata$Any.ART.info), -1)){
+  if(sorteddata$Client.Code[i] != sorteddata$Client.Code[i+1]){
+    # use end of study period if there was no next visit
+    dtnv.art[i] <- end.date - sorteddata$Date.of.Touchpoint[i]
+    cens.art[i] <- 1
+  }
+}
+dtnv.art[tail(which(sorteddata$Any.ART.info), 1)] <- end.date - tail(sorteddata$Date.of.Touchpoint[sorteddata$Any.ART.info], 1)
+cens.art[tail(which(sorteddata$Any.ART.info), 1)] <- 1
+
+visitno.art <- rep(0, length(dtnv.art))
+ccodes <- unique(sorteddata$Client.Code)
+for(cc in ccodes){
+  temp.nart <- sum(sorteddata$Any.ART.info[sorteddata$Client.Code == cc])
+  visitno.art[sorteddata$Client.Code == cc & sorteddata$Any.ART.info] <- seq(temp.nart)
+}
+
+sorteddata$DTNV.ART <- dtnv.art
+sorteddata$DTNV.All <- dtnv.all
+sorteddata$Censored.ART <- cens.art
+sorteddata$Censored.All <- cens.all
+sorteddata$VisitNo.ART <- visitno.art
 
 # Save cleaned dataframe --------------------------------------------------
 
