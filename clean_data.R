@@ -126,15 +126,22 @@ workingdata$Support.Group.YesNo[workingdata$Support.Group == "N/A"] <- "No"
 workingdata$Support.Group.YesNo[workingdata$Support.Group != "" &
                                   workingdata$Support.Group != "N/A"] <- "Yes"
 
-workingdata$Any.ART.info <- workingdata$ARV.Type != "" | workingdata$ART.Start != "" |
-  workingdata$ART.Situation != "" | workingdata$ARV.TAR.Received. != "" |
-  workingdata$ARV.Prophylaxis.Received. != "" | workingdata$ARV.Received. != ""
+workingdata$Any.ART.info <- (workingdata$ARV.Type != "" | !is.na(workingdata$ARV.Type))|
+  (workingdata$ART.Start != "" | !is.na(workingdata$ART.Start))|
+  (workingdata$ART.Situation != "" | !is.na(workingdata$ART.Situation))|
+  (workingdata$ARV.TAR.Received. != "" | !is.na(workingdata$ARV.TAR.Received.))|
+  (workingdata$ARV.Prophylaxis.Received. != "" | !is.na(workingdata$ARV.Prophylaxis.Received.))|
+  (workingdata$ARV.Received. != "" | !is.na(workingdata$ARV.Received.))
+workingdata$Any.ART.info[is.na(workingdata$Any.ART.info)] <- FALSE
 
 workingdata$Date.of.Touchpoint <- as.Date(workingdata$Date.of.Touchpoint,
                                           format = "%m/%d/%Y")
 workingdata$Date.of.Touchpoint[workingdata$Date.of.Touchpoint == "3014-11-19"] <- as.Date("2014-11-19")
 workingdata$Date.of.Touchpoint[workingdata$Date.of.Touchpoint == "2104-12-30"] <- as.Date("2014-12-30")
 workingdata <- workingdata[workingdata$Date.of.Touchpoint < as.Date("2016-01-01"), ]
+workingdata <- workingdata[workingdata$Date.of.Touchpoint > as.Date("2011-01-01"), ]
+workingdata <- workingdata[!is.na(workingdata$Date.of.Touchpoint), ]
+workingdata <- workingdata[!is.na(workingdata$Client.Code), ]
 
 # sort by client code and date
 sorteddata <- workingdata[order(factor(workingdata$Client.Code),
@@ -155,6 +162,7 @@ cens.all <- append(cens.all, 1)
 
 dtnv.art <- rep(0, length(sorteddata$Client.Code))
 dtnv.art[head(which(sorteddata$Any.ART.info), -1)] <- diff(sorteddata$Date.of.Touchpoint[sorteddata$Any.ART.info])
+dtnv.art[dtnv.art < 0] <- 0
 cens.art <- rep(0, length(dtnv.art))
 for(i in head(which(sorteddata$Any.ART.info), -1)){
   if(sorteddata$Client.Code[i] != sorteddata$Client.Code[i+1]){
@@ -169,8 +177,10 @@ cens.art[tail(which(sorteddata$Any.ART.info), 1)] <- 1
 visitno.art <- rep(0, length(dtnv.art))
 ccodes <- unique(sorteddata$Client.Code)
 for(cc in ccodes){
-  temp.nart <- sum(sorteddata$Any.ART.info[sorteddata$Client.Code == cc])
-  visitno.art[sorteddata$Client.Code == cc & sorteddata$Any.ART.info] <- seq(temp.nart)
+  if(!is.na(cc)){
+    temp.nart <- sum(sorteddata$Any.ART.info[sorteddata$Client.Code == cc], na.rm = TRUE)
+    visitno.art[sorteddata$Client.Code == cc & sorteddata$Any.ART.info] <- seq(temp.nart)
+  }
 }
 
 sorteddata$DTNV.ART <- dtnv.art
